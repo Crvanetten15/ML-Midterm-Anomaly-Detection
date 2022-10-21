@@ -1,7 +1,9 @@
 import sys
 import csv
+from typing import NoReturn
 import matplotlib.pyplot as plt
 import numpy as np
+from math import pi
 
 
 with open('./train/training-data.csv', "r") as t:
@@ -9,22 +11,28 @@ with open('./train/training-data.csv', "r") as t:
 
 headers = tr.pop(0)
 headers = headers[0].split(',')
+print(headers)
 
 for _ in range(len(tr)):
     tr[_] = tr[_][0].split(',')
     
 NormalizeTr = np.array(tr, dtype=float).T
 
-# print(NormalizeTr)
+means = []
 
+for i in range(1,26):
+    sum = 0
+    for _ in NormalizeTr[i]:
+        sum += _ 
+    means.append((sum/(len(NormalizeTr[i]))))    
 
+means = np.array(means, dtype=float)
+# print(means)
 
-# print(tr[0])
-# print(headers)
-
+'''
+Creation of Graphs
+'''
 figure, axis  = plt.subplots(3,9)
-
-print(len(headers[1:]))
 
 for x in range(9):
     print(x+1)
@@ -43,105 +51,54 @@ for x in range(9):
     axis[2, x].scatter(NormalizeTr[0], NormalizeTr[x+19])
     axis[2, x].set_title(f'{headers[x+19]}')
 
-# axis[0,0].scatter(NormalizeTr[0], NormalizeTr[1])
-# # axis[0,0].scatter(normal)
-# axis[0,0].set_title("f1_c vs T")
+# plt.show()
+'''
+End of Graphs 
+'''
 
-# axis[0,1].scatter(NormalizeTr[0], NormalizeTr[2])
-# # axis[0,0].scatter(normal)
-# axis[0,1].set_title("f1_a vs T")
+'''
+Pick the 'Normal' Data to create our Covariance Matrix
+[0 - 'time', 
+1 - 4 :     'f1_c', 'f1_a', 'f1_s', 'f1_d', 
+5 - 8 :     'f2_c', 'f2_a', 'f2_s', 'f2_d', 5 6 7
+9 - 12 :    'prg_c', 'prg_a', 'prg_s', 'prg_d', 
+13 - 16 :   'prd_c', 'prd_a', 'prd_s', 'prd_d', 14 15
+17 - 18 :   'pr_s', 'pr_d', 
+19 - 20 :   'lq_s', 'lq_d', 19
+21 - 22 :   'cmp_a_s', 'cmp_a_d', 21
+23 - 24 :   'cmp_b_s', 'cmp_b_d', 23
+25 - 26 :   'cmp_c_s', 'cmp_c_d] 25
+'''
 
-# axis[0,2].scatter(NormalizeTr[0], NormalizeTr[3])
-# # axis[0,0].scatter(normal)
-# axis[0,2].set_title("f1_s vs T")
+FeatureList = [NormalizeTr[5], NormalizeTr[6], NormalizeTr[7], NormalizeTr[14], NormalizeTr[15]]
+# Covariant matrix made with 'f2_c', 'f2_a', 'f2_s', 'prd_a', 'prd_s' 
+cov_data = np.cov(FeatureList)
+# print(cov_data)
 
-# axis[0,3].scatter(NormalizeTr[0], NormalizeTr[4])
-# # axis[0,0].scatter(normal)
-# axis[0,3].set_title("f1_d vs T")
-
-# axis[0,4].scatter(NormalizeTr[0], NormalizeTr[5])
-# # axis[0,0].scatter(normal)
-# axis[0,4].set_title("f2_c vs T")
-
-# axis[0,5].scatter(NormalizeTr[0], NormalizeTr[6])
-# # axis[0,0].scatter(normal)
-# axis[0,5].set_title("f2_a vs T")
-
-# axis[0,6].scatter(NormalizeTr[0], NormalizeTr[7])
-# # axis[0,0].scatter(normal)
-# axis[0,6].set_title("f2_s vs T")
-
-# axis[0,7].scatter(NormalizeTr[0], NormalizeTr[8])
-# # axis[0,0].scatter(normal)
-# axis[0,7].set_title("f2_d vs T")
-
-# axis[0,8].scatter(NormalizeTr[0], NormalizeTr[9])
-# # axis[0,0].scatter(normal)
-# axis[0,8].set_title("prg_c vs T")
-
-# axis[1,0].scatter(NormalizeTr[0], NormalizeTr[10])
-# # axis[0,0].scatter(normal)
-# axis[1,0].set_title("prg_a vs T")
-
-# axis[1,1].scatter(NormalizeTr[0], NormalizeTr[11])
-# # axis[0,0].scatter(normal)
-# axis[1,1].set_title("prg_s vs T")
-
-# axis[1,2].scatter(NormalizeTr[0], NormalizeTr[12])
-# # axis[0,0].scatter(normal)
-# axis[1,2].set_title("prg_d vs T")
-
-# axis[1,3].scatter(NormalizeTr[0], NormalizeTr[13])
-# # axis[0,0].scatter(normal)
-# axis[1,3].set_title("prd_c vs T")
-
-# axis[1,4].scatter(NormalizeTr[0], NormalizeTr[14])
-# # axis[0,0].scatter(normal)
-# axis[1,4].set_title("prd_a vs T")
-
-# axis[1,5].scatter(NormalizeTr[0], NormalizeTr[15])
-# # axis[0,0].scatter(normal)
-# axis[1,5].set_title("prd_s vs T")
-
-# axis[1,6].scatter(NormalizeTr[0], NormalizeTr[16])
-# # axis[0,0].scatter(normal)
-# axis[1,6].set_title("prd_d vs T")
-
-# axis[1,7].scatter(NormalizeTr[0], NormalizeTr[17])
-# # axis[0,0].scatter(normal)
-# axis[1,7].set_title("pr_s vs T")
-
-# axis[1,8].scatter(NormalizeTr[0], NormalizeTr[18])
-# # axis[0,0].scatter(normal)
-# axis[1,8].set_title("pr_d vs T")
-
-# axis[2,0].scatter(NormalizeTr[0], NormalizeTr[19])
-# # axis[0,0].scatter(normal)
-# axis[2,0].set_title("lq_s vs T")
-
-# axis[2,1].scatter(NormalizeTr[0], NormalizeTr[20])
-# # axis[0,0].scatter(normal)
-# axis[2,1].set_title("cmp_a_s vs T")
-
-# axis[2,2].scatter(NormalizeTr[0], NormalizeTr[21])
-# # axis[0,0].scatter(normal)
-# axis[2,2].set_title("cmp_a_d vs T")
-
-# axis[2,3].scatter(NormalizeTr[0], NormalizeTr[22])
-# # axis[0,0].scatter(normal)
-# axis[2,3].set_title("cmp_b_s vs T")
-
-# axis[2,4].scatter(NormalizeTr[0], NormalizeTr[23])
-# # axis[0,0].scatter(normal)
-# axis[2,4].set_title("cmp_b_d vs T")
-
-# axis[2,5].scatter(NormalizeTr[0], NormalizeTr[24])
-# # axis[0,0].scatter(normal)
-# axis[2,5].set_title("cmp_c_s vs T")
-
-# axis[2,6].scatter(NormalizeTr[0], NormalizeTr[25])
-# # axis[0,0].scatter(normal)
-# axis[2,6].set_title("cmp_c_d vs T")
+# equation now to find Guassian Distribution 
+'''
+d = number of features that you have 
+    (1  / ((2 * PI) ^ (d/2) * |Σ| ^ 1/2)) *
+'''
+epsilon = 2.0
 
 
-plt.show()
+def Prediction(CvMat, d, x, u):
+    x = np.array(x, dtype=float)
+    val_left = 1 / ((pow((2*pi), (d/2))) * (pow(np.linalg.det(CvMat), (1/2)))) 
+    val_right = np.exp((-1/2)*(x-u).T*(np.linalg.inv(CvMat))* (x - u))
+
+    full_value = val_left * val_right
+    return full_value
+
+# print(Prediction(cov_data, 5, , means))
+IndexUsed = [5,6,7,14,15]
+for _ in range(23):
+    with open(f'./valid/{_}.csv', "r") as t:
+        temp = list(csv.reader(t, delimiter=" "))
+    for i in range(len(temp[0])):
+        tr[i][0] = tr[i][0].split(',')
+        print(tr[0])
+    for x in IndexUsed:
+        print(f'{Prediction(cov_data, 5, temp[x], means)}')
+    exit()

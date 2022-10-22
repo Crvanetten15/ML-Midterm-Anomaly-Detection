@@ -71,6 +71,48 @@ for x in range(9):
 '''
 End of Graphs 
 '''
+def findTrEpsilon():
+    with open(f'./train/training-data.csv', "r") as t:
+            trd = list(csv.reader(t, delimiter=" "))
+    for d in range(len(trd)):
+        trd[d] = trd[d][0].split(',')
+    trd.pop(0)
+    trd = np.array(trd, dtype=float).T
+    trd = trd[1:]# 0th index is time
+    trd = np.array([trd[7],trd[5], trd[6], trd[15], trd[14]]) #, temp[14], temp[15]])
+
+    means = []
+    std = []
+        
+    for u in range(len(trd)):
+        means.append(np.mean(trd[u]))
+        std.append(np.std(trd[u]))
+
+    means = np.array(means, dtype=float)
+    std = np.array(vars, dtype=float)
+
+    return PredictionIndependent(trd.T, means, std)
+
+def findTrEpsilonM():
+    with open(f'./train/training-data.csv', "r") as t:
+            trd = list(csv.reader(t, delimiter=" "))
+    for d in range(len(trd)):
+        trd[d] = trd[d][0].split(',')
+    trd.pop(0)
+    trd = np.array(trd, dtype=float).T
+    trd = trd[1:]# 0th index is time
+    trd = np.array([trd[7],trd[5], trd[6], trd[15], trd[14]]) #, temp[14], temp[15]])
+
+    means = []
+    std = []
+        
+    for u in range(len(trd)):
+        means.append(np.mean(trd[u]))
+        std.append(np.std(trd[u]))
+
+    means = np.array(means, dtype=float)
+    std = np.array(vars, dtype=float)
+    return PredictionMulti(trd.T, means, 5)
 
 '''
 Pick the 'Normal' Data to create our Covariance Matrix
@@ -86,9 +128,9 @@ Pick the 'Normal' Data to create our Covariance Matrix
 25 - 26 :   'cmp_c_s', 'cmp_c_d]                    25
 '''
 
-FeatureList = [NormalizeTr[5], NormalizeTr[6], NormalizeTr[7], NormalizeTr[14], NormalizeTr[15]]
-# Covariant matrix made with 'f2_c', 'f2_a', 'f2_s', 'prd_a', 'prd_s' 
-cov_data = np.cov(FeatureList)
+# FeatureList = [NormalizeTr[5], NormalizeTr[6], NormalizeTr[7], NormalizeTr[14], NormalizeTr[15]]
+# # Covariant matrix made with 'f2_c', 'f2_a', 'f2_s', 'prd_a', 'prd_s' 
+# cov_data = np.cov(FeatureList)
 # print(cov_data)
 
 # equation now to find Guassian Distribution 
@@ -102,18 +144,21 @@ d = number of features that you have
 Task 2 - below 
 '''
 
-def PredictionIndependent(matrix, mean, std):
+def PredictionIndependent(x, mean, std):
 
-    totalp = 0
-    for x in matrix:
-        
-        p = 1
-        for j in range(len(x)):
-            term = (1 / (np.sqrt(2 * np.pi) * sigma[j])) * np.exp(-1 * (pow((x[j] - mean[j]),2)) / (2 * std[j]))
-            p *= term
-        # print(p)
-        totalp += p
-    return totalp
+    sum_of_prob = 0
+    for _ in x:
+        # print(_)
+        current_p = 1
+        for j in range(len(_)):
+            left = (1 /(np.sqrt(2*pi)*std[j]))
+            right = np.exp(-1*(pow((_[j] - mean[j]), 2))/(2 * std[j]))
+            # print(left, right)
+            temp_p = left * right
+            # print(temp_p)
+            current_p *= temp_p
+        sum_of_prob += current_p
+    return sum_of_prob
 
 
 
@@ -123,19 +168,29 @@ Task 3 - Below
 
 # print(np.linalg.det(cov_data))
 # exit()
-def PredictionMulti(CvMat, d, x, u):
-    x = np.array(x, dtype=float)
-    val_left = 1 / ((pow((2*pi), (d/2))) * (pow(np.linalg.det(CvMat), (1/2)))) 
+def PredictionMulti(x, mean, d):
 
-    for attr in range(len(x)):
-        for row in range(len(x[0])):
-            x[attr][row] -= u[attr]    
+    CovMatrix = np.cov(x.T)
 
+    # print(np.linalg.det(CovMatrix))
 
-    val_right = np.exp((-1/2)*(x-u)*(np.linalg.inv(CvMat))* (x - u))
+    try:
+        left = 1 / ((pow((2*pi), (d/2))) * (pow(np.linalg.det(CovMatrix), (1/2)))) 
+    # print(left)
+        sub_p= np.array((x-mean))
+    # print('hi', sub_p.dot(np.linalg.inv(CovMatrix)) * sub_p)
 
-    full_value = val_left * val_right
-    return full_value
+        right = np.exp( (-1/2) * sub_p.dot(np.linalg.inv(CovMatrix)) * sub_p )
+    except:
+        return 0
+    # print(right)
+
+    full_value = (left * right)
+    temp = []
+    for _ in range(len(full_value)):
+        temp.append(np.prod(full_value[_]))
+    print(np.sum(temp))
+    return np.sum(temp)
 
 # print(Prediction(cov_data, 5, , means))
 # IndexUsed = [5,6,7,14,15]
@@ -144,7 +199,11 @@ def PredictionMulti(CvMat, d, x, u):
 # print(epsilonVal)
 
 validInd = []
+
+# print(findTrEpsilonM())
+# exit()
 for _ in range(23):
+    # with open(f'./test/{_}.csv', "r") as t:
     with open(f'./valid/{_}.csv', "r") as t:
         temp = list(csv.reader(t, delimiter=" "))
     for d in range(len(temp)):
@@ -163,15 +222,16 @@ for _ in range(23):
 
     means = np.array(means, dtype=float)
     std = np.array(vars, dtype=float)
+    # print(PredictionMulti(temp.T, means, 5))
 
-    print(PredictionIndependent(temp.T, means, std))
+   
     # print(var 
     validInd.append(PredictionIndependent(temp.T, means, vars))
-
+    # validInd.append(PredictionMulti(temp.T, means, 5))
     # PredictionMulti(temp, 5,vars, means)
 
 
-epsilon = 8.5e-21
+epsilon = findTrEpsilon() # 8.5e-21
 
 for e in range(23):
     if validInd[e] > epsilon:
@@ -181,10 +241,10 @@ for e in range(23):
 
 print(validInd)
 
-
+# exit()
 
 ValidKey = [1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0]
-
+SubmissionKeyforFun = [1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1]
 
 NPs = [0,0,0,0] # TP, FP, TN, FN
 

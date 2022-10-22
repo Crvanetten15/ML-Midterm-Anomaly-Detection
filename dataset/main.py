@@ -114,6 +114,7 @@ def findTrEpsilonM():
     std = np.array(vars, dtype=float)
     return PredictionMulti(trd.T, means, 5)
 
+
 '''
 Pick the 'Normal' Data to create our Covariance Matrix
 [0 - 'time', 
@@ -157,7 +158,7 @@ def PredictionIndependent(x, mean, std):
             temp_p = left * right
             # print(temp_p)
             current_p *= temp_p
-        sum_of_prob += current_p
+        sum_of_prob += current_p # Conceptally this should be * =
     return sum_of_prob
 
 
@@ -169,28 +170,41 @@ Task 3 - Below
 # print(np.linalg.det(cov_data))
 # exit()
 def PredictionMulti(x, mean, d):
-
+    totalsum = []
+    counter = 1
     CovMatrix = np.cov(x.T)
+    CovMatrix = np.array(CovMatrix)
+    # print(mean.shape)
+    # print(len(x))
+    for v in range(len(x)):
+        val = np.linalg.det(CovMatrix)
+        if val == 0:
+            val =1
 
-    # print(np.linalg.det(CovMatrix))
+        left = 1 / ((pow((2*pi), (d/2))) * (pow(val, (1/2)))) 
+        sub_p= []
+        for y in range(len(mean)):
+            sub_p.append(x[v][y]-mean[y])
+        
+        sub_p = np.array(sub_p).reshape([len(sub_p), 1])
+        # print('-',np.linalg.det(CovMatrix))
+        # print(sub_p.shape)
+        # print('hi',(-1/2) * sub_p.T @ (np.linalg.inv(CovMatrix)) @ sub_p)
+        # print('hi', sub_p.dot(np.linalg.inv(CovMatrix)) * sub_p)
+        
+        
+        try:
+            right = np.exp((-1/2) * sub_p.T @ (np.linalg.inv(CovMatrix)) @ sub_p )
+        except:
+            right = 1
 
-    try:
-        left = 1 / ((pow((2*pi), (d/2))) * (pow(np.linalg.det(CovMatrix), (1/2)))) 
-    # print(left)
-        sub_p= np.array((x-mean))
-    # print('hi', sub_p.dot(np.linalg.inv(CovMatrix)) * sub_p)
-
-        right = np.exp( (-1/2) * sub_p.dot(np.linalg.inv(CovMatrix)) * sub_p )
-    except:
-        return 0
-    # print(right)
-
-    full_value = (left * right)
-    temp = []
-    for _ in range(len(full_value)):
-        temp.append(np.prod(full_value[_]))
-    print(np.sum(temp))
-    return np.sum(temp)
+        array = np.array((left * right))
+        totalsum.append(array)
+    
+    totalsum = np.array(totalsum)    
+    
+    
+    return np.sum(totalsum)
 
 # print(Prediction(cov_data, 5, , means))
 # IndexUsed = [5,6,7,14,15]
@@ -199,6 +213,7 @@ def PredictionMulti(x, mean, d):
 # print(epsilonVal)
 
 validInd = []
+
 
 # print(findTrEpsilonM())
 # exit()
@@ -211,7 +226,7 @@ for _ in range(23):
     temp.pop(0)
     temp = np.array(temp, dtype=float).T
     temp = temp[1:]# 0th index is time
-    temp = np.array([temp[7],temp[5], temp[6], temp[15], temp[14]]) #, temp[14], temp[15]])
+    temp = np.array([temp[7],temp[5],temp[6], temp[14], temp[15]]) #,  temp[15]])
 
     means = []
     std = []
@@ -222,6 +237,7 @@ for _ in range(23):
 
     means = np.array(means, dtype=float)
     std = np.array(vars, dtype=float)
+    # print(_)
     # print(PredictionMulti(temp.T, means, 5))
 
    
@@ -229,15 +245,21 @@ for _ in range(23):
     validInd.append(PredictionIndependent(temp.T, means, vars))
     # validInd.append(PredictionMulti(temp.T, means, 5))
     # PredictionMulti(temp, 5,vars, means)
-
-
-epsilon = findTrEpsilon() # 8.5e-21
+# exit()
+print(findTrEpsilon())
+epsilon =  findTrEpsilon()# 1.2e-06 # 8.5e-21
 
 for e in range(23):
-    if validInd[e] > epsilon:
+    if validInd[e] < epsilon: # other way for independent currently but we need to fix
         validInd[e] = 1
     else:
         validInd[e] = 0
+
+# for e in range(23):
+#     if validInd[e] < epsilon: # MULTIVARIATE Right WAY
+#         validInd[e] = 1
+#     else:
+#         validInd[e] = 0
 
 print(validInd)
 

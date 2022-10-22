@@ -102,76 +102,24 @@ d = number of features that you have
 Task 2 - below 
 '''
 
-def PredictionIndependent(x, var, u):
-    temp = []
-    indexes = [2, 3, 19]
-    [temp.append(x[i]) for i in indexes]
-    x = np.array(temp)
+def PredictionIndependent(matrix, mean, std):
 
-    # x = np.array(x, dtype=float)
-    # left part of equation needed 
-    print(len(x[0]))
-    val_left = 1 / (sqrt((2*pi))*var)
-    # prin(val_left)
-
-    # x's minus mu
-    for attr in range(len(x)):
-        for row in range(len(x[0])):
-            x[attr][row] -= u[attr]
-    
-
-    # x set to squared, and bottom handled
-    x = (pow(x, 2)) 
-    var = (2 * pow(var,2))
-    # print(x[0][0])
-
-    # Does parathesis math
-    for att in range(len(x)): # 26
-        for ro in range(len(x[0])):
-            x[att][ro] /= var[att]
-    # print(x[0][0])
-    x = x * -1
- 
-    x = np.exp(x)
-
-    for att in range(len(x)):
-        for ro in range(len(x[0])):
-            x[att][ro] *= val_left[att]
-
-    # good to here
- 
-    x = x.T
-# x   y row
-# attr| | | | | | | | |
-# 1   | | | | | | | | |
-# 2   | | | | | | | | |
-#     | | | | | | | | |
-#     | | | | | | | | |
-#     | | | | | | | | |
-#     | | | | | | | | |
-#     | | | | | | | | |
-#     | | | | | | | | |
-    # handle the power sum
-
-
-    values = []
-    for _ in range(len(x)):
-        values.append(np.prod(x[_]))
-
-    values = np.array(values,  dtype = float)
-    
-    print(values)
-    
-    summ = np.sum(values)
-
-    return summ
+    totalp = 0
+    for x in matrix:
+        
+        p = 1
+        for j in range(len(x)):
+            term = (1 / (np.sqrt(2 * np.pi) * sigma[j])) * np.exp(-1 * (pow((x[j] - mean[j]),2)) / (2 * std[j]))
+            p *= term
+        # print(p)
+        totalp += p
+    return totalp
 
 
 
 '''
 Task 3 - Below
 '''
-epsilon = 2.0
 
 # print(np.linalg.det(cov_data))
 # exit()
@@ -204,40 +152,39 @@ for _ in range(23):
     temp.pop(0)
     temp = np.array(temp, dtype=float).T
     temp = temp[1:]# 0th index is time
-    
-    means = []
-    vars = []
+    temp = np.array([temp[7],temp[5], temp[6], temp[15], temp[14]]) #, temp[14], temp[15]])
 
+    means = []
+    std = []
+    
     for u in range(len(temp)):
         means.append(np.mean(temp[u]))
-        vars.append(np.std(temp[u]))
+        std.append(np.std(temp[u]))
 
-        
-
-    # for i in range(9797):
-    #     means.append(m_temp)
     means = np.array(means, dtype=float)
-    vars = np.array(vars, dtype=float)
+    std = np.array(vars, dtype=float)
 
-    print(means)
-    print(vars) 
-
-    validInd.append(PredictionIndependent(temp, vars, means))
+    print(PredictionIndependent(temp.T, means, std))
+    # print(var 
+    validInd.append(PredictionIndependent(temp.T, means, vars))
 
     # PredictionMulti(temp, 5,vars, means)
 
 
+epsilon = 8.5e-21
 
+for e in range(23):
+    if validInd[e] > epsilon:
+        validInd[e] = 1
+    else:
+        validInd[e] = 0
 
-
-
+print(validInd)
 
 
 
 ValidKey = [1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0]
-for s in range(23):
-    if validInd[s] >= 2.22e-12:
-        validInd[s] = 1
+
 
 NPs = [0,0,0,0] # TP, FP, TN, FN
 
@@ -263,9 +210,3 @@ print("Precision: {}".format(PREC))
 print("Recall: {}".format(REC))
 print("F1: {}".format(F1))
 
-    # for i in range(len(tr)):
-    #     temp[i] = temp[i][0].split(',')
-    #     print(tr[0])
-    # for x in IndexUsed:
-    #     print(f'{PredictionMulti(cov_data, 5, temp[x], means)}')
-    # exit()

@@ -3,7 +3,7 @@ import csv
 from typing import NoReturn
 import matplotlib.pyplot as plt
 import numpy as np
-from math import pi, sqrt
+from math import pi, sqrt, log
 
 from pandas import array
 
@@ -35,14 +35,14 @@ for x in range(1,27):
     top_sum = 0
     for _ in NormalizeTr[x]:
         top_sum += pow((_ - means[x-1]), 2)
-    vars.append((top_sum/(len(NormalizeTr[i]))))    
+    vars.append(sqrt((top_sum/(len(NormalizeTr[i])))))    
 m_temp = list(means)
 # for i in range(9797):
 #     means.append(m_temp)
 means = np.array(means, dtype=float)
 vars = np.array(vars, dtype=float)
 
-# print(len(means))
+# print(means)
 # print(vars)
 # exit()
 
@@ -101,48 +101,70 @@ d = number of features that you have
 '''
 Task 2 - below 
 '''
+
 def PredictionIndependent(x, var, u):
+    temp = []
+    indexes = [2, 3, 19]
+    [temp.append(x[i]) for i in indexes]
+    x = np.array(temp)
+
     # x = np.array(x, dtype=float)
     # left part of equation needed 
+    print(len(x[0]))
     val_left = 1 / (sqrt((2*pi))*var)
-    
+    # prin(val_left)
+
     # x's minus mu
     for attr in range(len(x)):
         for row in range(len(x[0])):
             x[attr][row] -= u[attr]
     
+
     # x set to squared, and bottom handled
-    x = -1 * (pow(x, 2)) 
-    var = (2 * pow(var, 2))
+    x = (pow(x, 2)) 
+    var = (2 * pow(var,2))
+    # print(x[0][0])
 
     # Does parathesis math
     for att in range(len(x)): # 26
-        for ro in range(len(x[0])): # 9797
-            x[att][ro] /= var[attr]
-
-    # right side figured 
+        for ro in range(len(x[0])):
+            x[att][ro] /= var[att]
+    # print(x[0][0])
+    x = x * -1
+ 
     x = np.exp(x)
-
 
     for att in range(len(x)):
         for ro in range(len(x[0])):
-            x[att][ro] *= val_left[attr]
+            x[att][ro] *= val_left[att]
 
-
+    # good to here
+ 
+    x = x.T
+# x   y row
+# attr| | | | | | | | |
+# 1   | | | | | | | | |
+# 2   | | | | | | | | |
+#     | | | | | | | | |
+#     | | | | | | | | |
+#     | | | | | | | | |
+#     | | | | | | | | |
+#     | | | | | | | | |
+#     | | | | | | | | |
     # handle the power sum
+
+
     values = []
-    for _ in range(26):
-        if np.sum(x[_]) == 0:
-            continue
-        values.append(np.sum(x[_]))
+    for _ in range(len(x)):
+        values.append(np.prod(x[_]))
+
+    values = np.array(values,  dtype = float)
     
-    summ = 1
-    for y in range(len(values)):
-        summ *= values[y]
-        # print(summ)
-    varE = 0.05e-200
+    print(values)
     
-    return 1 if summ > varE else 0
+    summ = np.sum(values)
+
+    return summ
 
 
 
@@ -169,6 +191,10 @@ def PredictionMulti(CvMat, d, x, u):
 
 # print(Prediction(cov_data, 5, , means))
 # IndexUsed = [5,6,7,14,15]
+# NormalizeTr = NormalizeTr[1:]
+# epsilonVal = PredictionIndependent(NormalizeTr, vars, means)
+# print(epsilonVal)
+
 validInd = []
 for _ in range(23):
     with open(f'./valid/{_}.csv', "r") as t:
@@ -178,12 +204,40 @@ for _ in range(23):
     temp.pop(0)
     temp = np.array(temp, dtype=float).T
     temp = temp[1:]# 0th index is time
-    # print('hi',temp[0])
-    # temp = temp.T
+    
+    means = []
+    vars = []
+
+    for u in range(len(temp)):
+        means.append(np.mean(temp[u]))
+        vars.append(np.std(temp[u]))
+
+        
+
+    # for i in range(9797):
+    #     means.append(m_temp)
+    means = np.array(means, dtype=float)
+    vars = np.array(vars, dtype=float)
+
+    print(means)
+    print(vars) 
+
     validInd.append(PredictionIndependent(temp, vars, means))
+
     # PredictionMulti(temp, 5,vars, means)
-    # exit()
+
+
+
+
+
+
+
+
+
 ValidKey = [1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0]
+for s in range(23):
+    if validInd[s] >= 2.22e-12:
+        validInd[s] = 1
 
 NPs = [0,0,0,0] # TP, FP, TN, FN
 

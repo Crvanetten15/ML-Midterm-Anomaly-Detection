@@ -1,6 +1,7 @@
 import sys
 import csv
 from typing import NoReturn
+from matplotlib.font_manager import list_fonts
 import matplotlib.pyplot as plt
 import numpy as np
 from math import pi, sqrt, log
@@ -71,48 +72,42 @@ for x in range(9):
 '''
 End of Graphs 
 '''
+
+
+
+
+'''
+Use of training data
+'''
+with open(f'./train/training-data.csv', "r") as t:
+        trd = list(csv.reader(t, delimiter=" "))
+for d in range(len(trd)):
+    trd[d] = trd[d][0].split(',')
+trd.pop(0)
+trd = np.array(trd, dtype=float).T
+trd = trd[1:]# 0th index is time
+trd = np.array([trd[2],trd[3], trd[19]]) #[trd[2],trd[3], trd[19] 
+means = []
+std = []
+
+for u in range(len(trd)):
+    means.append(np.mean(trd[u]))
+
+for i in range(len(trd)):  
+    std.append(np.std(trd[i]))
+
+means = np.array(means, dtype=float)
+std = np.array(std, dtype=float)
+
 def findTrEpsilon():
-    with open(f'./train/training-data.csv', "r") as t:
-            trd = list(csv.reader(t, delimiter=" "))
-    for d in range(len(trd)):
-        trd[d] = trd[d][0].split(',')
-    trd.pop(0)
-    trd = np.array(trd, dtype=float).T
-    trd = trd[1:]# 0th index is time
-    trd = np.array([trd[7],trd[5], trd[6], trd[15], trd[14]]) #, temp[14], temp[15]])
-
-    means = []
-    std = []
-        
-    for u in range(len(trd)):
-        means.append(np.mean(trd[u]))
-        std.append(np.std(trd[u]))
-
-    means = np.array(means, dtype=float)
-    std = np.array(vars, dtype=float)
-
-    return PredictionIndependent(trd.T, means, std)
+    return PredictionIndependent(trd.T)
 
 def findTrEpsilonM():
-    with open(f'./train/training-data.csv', "r") as t:
-            trd = list(csv.reader(t, delimiter=" "))
-    for d in range(len(trd)):
-        trd[d] = trd[d][0].split(',')
-    trd.pop(0)
-    trd = np.array(trd, dtype=float).T
-    trd = trd[1:]# 0th index is time
-    trd = np.array([trd[7],trd[5], trd[6], trd[15], trd[14]]) #, temp[14], temp[15]])
+    return PredictionMulti(trd.T, 3)
+'''
+End of training
+'''
 
-    means = []
-    std = []
-        
-    for u in range(len(trd)):
-        means.append(np.mean(trd[u]))
-        std.append(np.std(trd[u]))
-
-    means = np.array(means, dtype=float)
-    std = np.array(vars, dtype=float)
-    return PredictionMulti(trd.T, means, 5)
 
 
 '''
@@ -145,80 +140,83 @@ d = number of features that you have
 Task 2 - below 
 '''
 
-def PredictionIndependent(x, mean, std):
+# temp_p = (1 / (np.sqrt(2 * np.pi) * std[n])) * np.exp(-1 * ((_[n] - means[n]) ** 2) / (2 * std[n]))
 
+def PredictionIndependent(CurrentMat):
     sum_of_prob = 0
-    for _ in x:
-        # print(_)
-        current_p = 1
-        for j in range(len(_)):
-            left = (1 /(np.sqrt(2*pi)*std[j]))
-            right = np.exp(-1*(pow((_[j] - mean[j]), 2))/(2 * std[j]))
-            # print(left, right)
+    for _ in CurrentMat:
+        p = 1
+        for n in range(len(_)):
+            
+            left = (1 / (np.sqrt(2 * np.pi) * std[n]))
+            right = np.exp(-1 * (pow((_[n] - means[n]), 2)) / (2 * std[n]))
+            
             temp_p = left * right
-            # print(temp_p)
-            current_p *= temp_p
-        sum_of_prob += current_p # Conceptally this should be * =
+            
+            p *= temp_p
+        # print(p)
+        sum_of_prob += p
+
     return sum_of_prob
-
-
 
 '''
 Task 3 - Below
 '''
 
-# print(np.linalg.det(cov_data))
-# exit()
-def PredictionMulti(x, mean, d):
+'''
+            |    CONSTANT VALUE    |     | each x is a vector of data sets | 
+            ____________1__________
+p(x;𝜇,Σ) = ((2𝜋)^(d/2))*(|Σ|^(1/2))    * exp((-1/2)*(x - 𝜇).T * (Σ^(-1)) * (x - 𝜇)))
+
+'''
+def PredictionMulti(x, d):
     totalsum = []
-    counter = 1
     CovMatrix = np.cov(x.T)
     CovMatrix = np.array(CovMatrix)
-    # print(mean.shape)
+    list_of_right = []
     # print(len(x))
     for v in range(len(x)):
         val = np.linalg.det(CovMatrix)
+        
+        # if the codeterminate is 0 means the data is a 1 d array and no inveritable
         if val == 0:
-            val =1
+            val = 0.000000000000000000001
 
         left = 1 / ((pow((2*pi), (d/2))) * (pow(val, (1/2)))) 
         sub_p= []
-        for y in range(len(mean)):
-            sub_p.append(x[v][y]-mean[y])
+        for y in range(len(means)):
+            sub_p.append(x[v][y]-means[y])
         
         sub_p = np.array(sub_p).reshape([len(sub_p), 1])
-        # print('-',np.linalg.det(CovMatrix))
-        # print(sub_p.shape)
-        # print('hi',(-1/2) * sub_p.T @ (np.linalg.inv(CovMatrix)) @ sub_p)
-        # print('hi', sub_p.dot(np.linalg.inv(CovMatrix)) * sub_p)
         
-        
+        # if the codetermine is 0 its not invertable and is even already 
         try:
             right = np.exp((-1/2) * sub_p.T @ (np.linalg.inv(CovMatrix)) @ sub_p )
         except:
-            right = 1
+            right = np.exp((-1/2) * sub_p.T @ CovMatrix @ sub_p )
 
-        array = np.array((left * right))
-        totalsum.append(array)
+        array = (left * right)
+        # print(array)
+        if (array == 0.0):
+            list_of_right.append(0)
+        
+        list_of_right.append(1 if array < 6.6619532e-10 else 0)
     
-    totalsum = np.array(totalsum)    
-    
-    
-    return np.sum(totalsum)
+    count = 0
+    for _ in list_of_right:
+            if _ == 1:
+                count += 1
 
-# print(Prediction(cov_data, 5, , means))
-# IndexUsed = [5,6,7,14,15]
-# NormalizeTr = NormalizeTr[1:]
-# epsilonVal = PredictionIndependent(NormalizeTr, vars, means)
-# print(epsilonVal)
 
+    return (count/len(list_of_right))
+
+
+# Tracking variables for testing against valid
+validMulti = []
 validInd = []
 
-
-# print(findTrEpsilonM())
-# exit()
 for _ in range(23):
-    # with open(f'./test/{_}.csv', "r") as t:
+
     with open(f'./valid/{_}.csv', "r") as t:
         temp = list(csv.reader(t, delimiter=" "))
     for d in range(len(temp)):
@@ -226,69 +224,95 @@ for _ in range(23):
     temp.pop(0)
     temp = np.array(temp, dtype=float).T
     temp = temp[1:]# 0th index is time
-    temp = np.array([temp[7],temp[5],temp[6], temp[14], temp[15]]) #,  temp[15]])
+    temp = np.array([temp[2], temp[3], temp[19]])   # ,temp[5],temp[6], temp[14], temp[15]]) #,  temp[15]])
 
-    means = []
-    std = []
+    validMulti.append(PredictionMulti(temp.T, 3))
+    validInd.append(PredictionIndependent(temp.T))
     
-    for u in range(len(temp)):
-        means.append(np.mean(temp[u]))
-        std.append(np.std(temp[u]))
 
-    means = np.array(means, dtype=float)
-    std = np.array(vars, dtype=float)
-    # print(_)
-    # print(PredictionMulti(temp.T, means, 5))
 
-   
-    # print(var 
-    validInd.append(PredictionIndependent(temp.T, means, vars))
-    # validInd.append(PredictionMulti(temp.T, means, 5))
-    # PredictionMulti(temp, 5,vars, means)
-# exit()
-print(findTrEpsilon())
-epsilon =  findTrEpsilon()# 1.2e-06 # 8.5e-21
+epsilonInd =  findTrEpsilon()# 1.2e-06 # 8.5e-21
+epsilonMulti =  .51 #5.09e-6#findTrEpsilonM()
 
-for e in range(23):
-    if validInd[e] < epsilon: # other way for independent currently but we need to fix
-        validInd[e] = 1
-    else:
-        validInd[e] = 0
+def resetLists(validreport, epi):
+    for e in range(23):
+        if validreport[e] < epi: 
+            validreport[e] = 1
+        else:
+            validreport[e] = 0
 
-# for e in range(23):
-#     if validInd[e] < epsilon: # MULTIVARIATE Right WAY
-#         validInd[e] = 1
-#     else:
-#         validInd[e] = 0
 
-print(validInd)
-
-# exit()
+resetLists(validInd, epsilonInd)
+resetLists(validMulti, epsilonMulti)
 
 ValidKey = [1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0]
-SubmissionKeyforFun = [1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1]
 
-NPs = [0,0,0,0] # TP, FP, TN, FN
-
-for _ in range(len(validInd)):
-    # print(validInd[_], ValidKey[_])
-    if validInd[_] == ValidKey[_]:
-        if validInd[_] == 1:
-            NPs[0] += 1
+ # TP, FP, TN, FN
+def FindAnomolies(table):
+    NPs = [0,0,0,0]
+    for _ in range(len(table)):
+        if table[_] == ValidKey[_]:
+            if table[_] == 1:
+                NPs[0] += 1
+            else:
+                NPs[2] += 1
         else:
-            NPs[2] += 1
-    else:
-        if validInd[_] == 1:
-            NPs[1] += 1
+            if table[_] == 1:
+                NPs[1] += 1
+            else:
+                NPs[3] += 1
+
+    PREC = NPs[0] / (NPs[0] + NPs[1])
+    REC = NPs[0] / (NPs[0] + NPs[3])
+    F1 = 2 * (PREC * REC) / (PREC + REC)
+
+    print(f'TP: {NPs[0]}FP: {NPs[1]} TN: {NPs[2]}FN: {NPs[3]}')
+    print("Precision: {}".format(PREC))
+    print("Recall: {}".format(REC))
+    print("F1: {}".format(F1))
+
+'''
+Valid Data reports
+'''
+print()
+print('Independent - Valid\n',validInd)
+FindAnomolies(validInd)
+
+print()
+print('MultiVariant - Valid\n',validMulti)
+FindAnomolies(validMulti)
+
+validMultiT = []
+validIndT = []
+
+for _ in range(58):
+
+    with open(f'./test/{_}.csv', "r") as t:
+        temp = list(csv.reader(t, delimiter=" "))
+    for d in range(len(temp)):
+        temp[d] = temp[d][0].split(',')
+    temp.pop(0)
+    temp = np.array(temp, dtype=float).T
+    temp = temp[1:]# 0th index is time
+    temp = np.array([temp[2], temp[3], temp[19]])   # ,temp[5],temp[6], temp[14], temp[15]]) #,  temp[15]])
+
+    validMultiT.append(PredictionMulti(temp.T, 3))
+    validIndT.append(PredictionIndependent(temp.T))
+
+
+epsilonIndT =  findTrEpsilon()# 1.2e-06 # 8.5e-21
+epsilonMultiT = .51#findTrEpsilonM()
+
+def resetLists(validreport, epi):
+    for e in range(58):
+        if validreport[e] < epi: 
+            validreport[e] = 1
         else:
-            NPs[3] += 1
+            validreport[e] = 0
 
-PREC = NPs[0] / (NPs[0] + NPs[1])
-REC = NPs[0] / (NPs[0] + NPs[3])
-F1 = 2 * (PREC * REC) / (PREC + REC)
 
-print(f'TP: {NPs[0]}FP: {NPs[1]} TN: {NPs[2]}FN: {NPs[3]}')
-print("Precision: {}".format(PREC))
-print("Recall: {}".format(REC))
-print("F1: {}".format(F1))
+resetLists(validIndT, epsilonIndT)
+resetLists(validMultiT, epsilonMultiT)
 
+print('Inedependent Testing -\n', validIndT)
+print('Multivariant Testing -\n', validMultiT)

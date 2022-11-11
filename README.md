@@ -13,7 +13,11 @@ Testing: You need to label 0 or 1 for each csv file in the testing. You MUST sub
 # Report:
 
 Task 0 (5 points): Give the contribution of each team member. For example, if you two contribute equally, just mention 50% for student A, and 50% for student B.
+
 Task 1 (20 points): Get familiar with the dataset. You can do some statistic analysis (table or plotting) for each feature. You can also compare the feature difference between the normal data and abnormal data. Put your analysis within 2 pages in the report.
+
 Task 2 (30 points): Using independent Gaussian analysis for anomaly detection. The threshold can be tuned using the validation dataset. Report the True Positive, False Positive, True Negative, and False Negative, Precision, Recall, and F1 score.
+
 Task 3 (45 points): Using Multi-variate Gaussian analysis for anomaly detection. The threshold can be tuned using the validation dataset. Report the True Positive, False Positive, True Negative, and False Negative, Precision, Recall, and F1 score.
+
 Hint: You don’t need to submit the label for each row of datum. We only need your conclusion for a whole CSV. You can do majority vote or aggregation of the data, e.g., you can say if more than 50% (the threshold I give here is just random) rows are abnormal, the whole CSV is more likely to be abnormal.

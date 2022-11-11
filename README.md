@@ -21,3 +21,18 @@ Task 2 (30 points): Using independent Gaussian analysis for anomaly detection. T
 Task 3 (45 points): Using Multi-variate Gaussian analysis for anomaly detection. The threshold can be tuned using the validation dataset. Report the True Positive, False Positive, True Negative, and False Negative, Precision, Recall, and F1 score.
 
 Hint: You don’t need to submit the label for each row of datum. We only need your conclusion for a whole CSV. You can do majority vote or aggregation of the data, e.g., you can say if more than 50% (the threshold I give here is just random) rows are abnormal, the whole CSV is more likely to be abnormal.
+
+# REPORT FINDINGS
+The objective of the midterm project was to practice multiple methods of anomaly detection using gaussian distribution and multivariate gaussian distribution. 
+
+# Task 0 : 
+Shown in Repository statistics
+
+# Task 1 : 
+To find out which data sets to use for the training data, we must analyze each of the features graphed over time. In order to have the most accurate training data we need our graphs to be smooth, and “clean”. We also want them to be following a repeating pattern. The data points which fit this description are as follows: 'f2_c', 'f2_a', 'f2_s', 'prd_c', 'prd_a', 'prd_s', 'lq_s', 'cmp_a_s', 'cmp_b_s', 'cmp_c_s'. Shown below are each of these sets of data graphed over time. They will all be on one graph as to not take up too much space in the report. 
+
+# Task 2 :
+The normal or Gaussian distribution is one of the most important probability distributions used in statistics. We can use this equation to detect normal and abnormal sets of data. After tinkering with our data sets we were able to create an Independent Gaussian Analysis of our data that returned a fairly good f1_score(~.97) when compared to the validation dataset. Results shown below using the training data set to help set an epsilon and features (f1_s, f1_d, pr_s).
+
+# Task 3 : 
+A multivariate normal distribution is described as a vector in multiple normally distributed variables. Using this method for our anomaly detection, we can compare our results using the validation dataset. We built out the equation for a Multi-variate Gaussian Distribution to return the likelihood that a singular row of data sets was an anomaly then took the percentage of data sets that were anomalous and tested that against an agreed percent of .50. In our multivariate equations we again used the same feature set that was used in the independent (f1_s, f1_d, pr_s). When completed we are given the data and F1_score, as shown below:
